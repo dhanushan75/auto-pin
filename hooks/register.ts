@@ -1,4 +1,4 @@
-import type { McpToolResult, Register } from 'claude-code'
+import type { EngineInterface, McpToolResult, Register } from 'claude-code'
 
 const SWEEP_MS = 60 * 60 * 1000
 const TICK_MS = 30 * 1000
@@ -12,30 +12,38 @@ const json = (r: McpToolResult) => {
   return JSON.parse(r.content.find((c) => c.text)?.text ?? 'null')
 }
 
+const mine = async ($: EngineInterface) => ((await $.store.get(KEY)) as string[] | undefined) ?? []
+const pin = ($: EngineInterface, id: string, pinned: boolean) =>
+  $.mcp.call('ccd_sidebar', 'set_pinned', { session_id: id, pinned })
+
+// The app's reported `pinned` lags behind the sidebar, so trust set_pinned's own reply instead.
+const pinSelf = async ($: EngineInterface) => {
+  const self: Row = json(await $.mcp.call('ccd_session_mgmt', 'get_session', { session_id: 'self' }))
+  const res = await pin($, 'self', true)
+  if (res.isError) throw new Error('set_pinned failed')
+  if (/already/i.test(res.content.find((c) => c.text)?.text ?? '')) return // pinned before: yours, or ours from earlier
+  const ids = await mine($)
+  if (!ids.includes(self.sessionId)) await $.store.set(KEY, [...ids, self.sessionId])
+}
+
 export const register: Register = (on, options) => {
   const idleHours = Number(options.idleHours ?? 14)
   const IDLE_MS = idleHours * 60 * 60 * 1000
 
+  // Every message re-pins the session, so an active session is always pinned.
+  if (options.repinOnMessage !== false) {
+    on('prompt.submit', async ($, e, next) => {
+      void pinSelf($).catch(() => {})
+      return next(e)
+    })
+  }
+
   on('session.start', async ($, e, next) => {
     const r = await next(e)
 
-    const mine = async () => ((await $.store.get(KEY)) as string[] | undefined) ?? []
-    const pin = (id: string, pinned: boolean) =>
-      $.mcp.call('ccd_sidebar', 'set_pinned', { session_id: id, pinned })
-
-    // The app's reported `pinned` lags behind the sidebar, so trust set_pinned's own reply instead.
-    const pinSelf = async () => {
-      const self: Row = json(await $.mcp.call('ccd_session_mgmt', 'get_session', { session_id: 'self' }))
-      const res = await pin('self', true)
-      if (res.isError) throw new Error('set_pinned failed')
-      if (/already/i.test(res.content.find((c) => c.text)?.text ?? '')) return // pinned before: yours, or ours from an earlier start
-      const ids = await mine()
-      if (!ids.includes(self.sessionId)) await $.store.set(KEY, [...ids, self.sessionId])
-    }
-
     // ponytail: read-modify-write on the store, two sessions sweeping at once can drop an id; the cost is one pin that never auto-unpins
     const sweep = async () => {
-      const ids = await mine()
+      const ids = await mine($)
       if (!ids.length) return
       const rows: Row[] = json(await $.mcp.call('ccd_session_mgmt', 'list_sessions', { limit: 200 })) ?? []
       const byId = new Map(rows.map((s) => [s.sessionId, s]))
@@ -46,7 +54,7 @@ export const register: Register = (on, options) => {
         if (!s) { keep.push(id); continue } // this session (the list leaves it out), or not listed
         // No `pinned` check: it lags. Unpinning one you already unpinned is a harmless no-op.
         const idle = !s.isRunning && now - Date.parse(s.lastActivityAt ?? '') > IDLE_MS
-        if (idle && !(await pin(id, false)).isError) continue
+        if (idle && !(await pin($, id, false)).isError) continue
         keep.push(id)
       }
       await $.store.set(KEY, keep)
@@ -57,7 +65,7 @@ export const register: Register = (on, options) => {
     let selfDone = false
     let lastSweep = 0
     const tick = async () => {
-      if (!selfDone) { await pinSelf(); selfDone = true }
+      if (!selfDone) { await pinSelf($); selfDone = true }
       const now = await $.clock.now()
       if (idleHours > 0 && now - lastSweep >= SWEEP_MS) { await sweep(); lastSweep = now }
     }

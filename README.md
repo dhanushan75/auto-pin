@@ -1,6 +1,6 @@
 # auto-pin
 
-A Claude Code mod that pins every new session in the desktop app's Code-tab sidebar as soon as it starts, so your sessions are always under **Pinned**.
+A Claude Code mod that pins a session in the desktop app's Code-tab sidebar when it starts and each time you send it a message, so the sessions you're working in are always under **Pinned**.
 
 Desktop app only: in a terminal or VS Code session it does nothing.
 
@@ -8,7 +8,11 @@ After a session has been idle for 14 hours (configurable), auto-pin unpins it ag
 
 ## Settings
 
-**Unpin after idle hours** (`idleHours`, default `14`): how long a session auto-pin pinned can sit idle before it is unpinned. `0` never unpins. Change it in the plugin's settings (the config menu), or when you install it.
+**Unpin after idle hours** (`idleHours`, default `14`): how long a session auto-pin pinned can sit idle before it is unpinned. `0` never unpins.
+
+**Re-pin on every message** (`repinOnMessage`, default on): pin the session again each time you send it a message, even if you unpinned it. Turn it off to pin only when a session starts, so an unpin lasts until the session restarts.
+
+Change them in the plugin's settings (the config menu), or when you install it.
 
 ## Install
 

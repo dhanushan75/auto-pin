@@ -1,6 +1,6 @@
 {
   "name": "auto-pin",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Pins every session in the Code-tab sidebar when it starts and unpins it after it sits idle",
   "author": {
     "name": "dhanushan75",
@@ -13,6 +13,12 @@
       "title": "Unpin after idle hours",
       "description": "Unpin a session auto-pin pinned once it has had no activity for this many hours. 0 never unpins. Pins you make yourself are never touched.",
       "default": 14
+    },
+    "repinOnMessage": {
+      "type": "boolean",
+      "title": "Re-pin on every message",
+      "description": "Pin the session again each time you send it a message, even if you unpinned it. Off: sessions are pinned only when they start, and an unpin lasts until the session restarts.",
+      "default": true
     }
   },
   "homepage": "https://github.com/dhanushan75/auto-pin",
