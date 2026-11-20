@@ -1,0 +1,1 @@
+{ "name": "auto-pin", "version": "0.2.0", "description": "Pins every session in the Code-tab sidebar when it starts and unpins it after 14 idle hours", "license": "MIT" }

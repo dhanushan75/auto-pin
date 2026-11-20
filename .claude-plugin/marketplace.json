@@ -1,0 +1,5 @@
+{
+  "name": "auto-pin",
+  "owner": { "name": "dhanushan75" },
+  "plugins": [{ "name": "auto-pin", "source": "./" }]
+}
