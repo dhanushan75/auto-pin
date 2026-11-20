@@ -1,1 +1,14 @@
-{ "name": "auto-pin", "version": "0.2.0", "description": "Pins every session in the Code-tab sidebar when it starts and unpins it after 14 idle hours", "license": "MIT" }
+{
+  "name": "auto-pin",
+  "version": "0.3.0",
+  "description": "Pins every session in the Code-tab sidebar when it starts and unpins it after it sits idle",
+  "license": "MIT",
+  "userConfig": {
+    "idleHours": {
+      "type": "number",
+      "title": "Unpin after idle hours",
+      "description": "Unpin a session auto-pin pinned once it has had no activity for this many hours. 0 never unpins. Pins you make yourself are never touched.",
+      "default": 14
+    }
+  }
+}

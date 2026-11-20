@@ -4,7 +4,11 @@ A Claude Code mod that pins every new session in the desktop app's Code-tab side
 
 Desktop app only: in a terminal or VS Code session it does nothing.
 
-After a session has been idle for 14 hours, auto-pin unpins it again; reopen it and it is pinned again. Only pins auto-pin made are removed: a session you pin yourself stays pinned until you unpin it.
+After a session has been idle for 14 hours (configurable), auto-pin unpins it again; reopen it and it is pinned again. Only pins auto-pin made are removed: a session you pin yourself stays pinned until you unpin it.
+
+## Settings
+
+**Unpin after idle hours** (`idleHours`, default `14`): how long a session auto-pin pinned can sit idle before it is unpinned. `0` never unpins. Change it in the plugin's settings (the config menu), or when you install it.
 
 ## Install
 
